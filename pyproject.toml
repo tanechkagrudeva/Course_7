@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "coursework-7"
+version = "0.1.0"
+description = "Coursework 7 for SkyPro course"
+authors = ["satel31 <blokhnina.tatiana@yandex.ru>"]
+readme = "README.md"
+packages = [{include = "coursework_7"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+django = "^4.2.4"
+python-dotenv = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
