@@ -12,8 +12,10 @@ class Habit(models.Model):
     action = models.CharField(max_length=255, verbose_name='Action')
     is_pleasant = models.BooleanField(default=False, verbose_name='Is pleasant')
     related_habit = models.ForeignKey('Habit', on_delete=models.SET_NULL, **NULLABLE, verbose_name='Related habit')
+    # Frequency in days
     frequency = models.IntegerField(default=1, verbose_name='Frequency')
-    reward = models.CharField(max_length=255, verbose_name='Reward')
+    reward = models.CharField(max_length=255, **NULLABLE, verbose_name='Reward')
+    # Execution_time in seconds
     execution_time = models.IntegerField(**NULLABLE, verbose_name='Execution time')
     is_public = models.BooleanField(default=False, verbose_name='Is public')
 
