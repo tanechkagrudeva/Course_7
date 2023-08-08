@@ -9,9 +9,8 @@ class HabitSerializer(serializers.ModelSerializer):
         model = Habit
         fields = '__all__'
         validators = [
-            RewardValidator(field='reward'),
-            RelatedHabitValidator(field='related_habit'),
+            RewardRelatedHabitValidator(),
             ExecutionTimeValidator(field='execution_time'),
-            IsPleasantValidator(field='is_pleasant'),
+            IsPleasantValidator(),
             FrequencyValidator(field='frequency')
         ]
