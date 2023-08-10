@@ -152,12 +152,12 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_TIMEZONE = 'Europe/Moscow'
 
 CELERY_BEAT_SCHEDULE = {
-    'send_telegram_message': {
-        'task': 'apps.habits.tasks.send_telegram_message',
-        'schedule': timedelta(minutes=1)
-    },
     'get_chat_id': {
         'task': 'apps.habits.tasks.get_chat_id',
+        'schedule': timedelta(minutes=1)
+    },
+    'send_telegram_message': {
+        'task': 'apps.habits.tasks.send_telegram_message',
         'schedule': timedelta(minutes=1)
     }
 }
