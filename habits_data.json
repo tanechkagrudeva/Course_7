@@ -1,0 +1,50 @@
+[
+  {
+    "model": "habits.habit",
+    "pk": 2,
+    "fields": {
+      "user": 1,
+      "place": "park",
+      "time": "2023-08-11T20:46:00Z",
+      "action": "do yoga",
+      "is_pleasant": false,
+      "related_habit": null,
+      "frequency": 1,
+      "reward": "eat chocolate",
+      "execution_time": 10,
+      "is_public": true
+    }
+  },
+  {
+    "model": "habits.habit",
+    "pk": 3,
+    "fields": {
+      "user": 2,
+      "place": "work",
+      "time": "2023-08-11T19:46:00Z",
+      "action": "drink water",
+      "is_pleasant": false,
+      "related_habit": 4,
+      "frequency": 1,
+      "reward": null,
+      "execution_time": 120,
+      "is_public": false
+    }
+  },
+  {
+    "model": "habits.habit",
+    "pk": 4,
+    "fields": {
+      "user": 1,
+      "place": "home",
+      "time": "2023-08-11T10:03:07.529Z",
+      "action": "read a book",
+      "is_pleasant": true,
+      "related_habit": null,
+      "frequency": 3,
+      "reward": null,
+      "execution_time": 120,
+      "is_public": true
+    }
+  }
+]
