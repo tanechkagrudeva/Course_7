@@ -23,6 +23,7 @@ django-celery-beat = "^2.5.0"
 requests = "^2.31.0"
 django-cors-headers = "^4.2.0"
 drf-yasg = "^1.21.7"
+coverage = "^7.2.7"
 
 [build-system]
 requires = ["poetry-core"]
