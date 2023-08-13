@@ -37,8 +37,10 @@ SPA проект, в котором каждый желающий может р�
 * Python 3.11
 * Django
 * DRF
+* CORS
 * PostgreSQL
 * JWT
 * Celery
 * Redis
 * Unittest
+* flake8
