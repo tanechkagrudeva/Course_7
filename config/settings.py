@@ -95,9 +95,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',  # os.getenv('name'),
         'USER': 'postgres',
-        'HOST': 'db'
-        # 'PASSWORD': os.getenv('password_db')
-    }
+        'HOST': 'db',
+        'PASSWORD': 'mysecretpassword'  # os.getenv('password_db')
+}
 }
 
 # Password validation
@@ -133,6 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -152,7 +153,7 @@ REST_FRAMEWORK = {
 TELEGRAM_API_KEY = os.getenv('telegram_api_key')
 
 # Settings for celery
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_TIMEZONE = 'Europe/Moscow'
 
 CELERY_BEAT_SCHEDULE = {
