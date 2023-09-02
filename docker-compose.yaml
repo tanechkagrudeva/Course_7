@@ -16,7 +16,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   app:
     build: .
     container_name: app_spa
@@ -36,9 +35,9 @@ services:
       - '8000:8000'
     depends_on:
       db:
-        condition: service-healthy
+        condition: service_healthy
       redis:
-        condition: service-started
+        condition: service_started
 
   redis:
     image: redis:7.0.2-alpine
