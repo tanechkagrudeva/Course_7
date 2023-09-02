@@ -21,6 +21,7 @@ services:
     container_name: app_spa
     env_file:
       - .env
+    tty: true
     command: >
       bash -c "python manage.py collectstatic --noinput
       && python manage.py makemigrations
