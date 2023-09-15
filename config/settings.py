@@ -88,9 +88,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Django_7',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'Zima-2023',
+        'PASSWORD': 'mysecretpassword',
+        'HOST': 'db',
     }
 }
 
