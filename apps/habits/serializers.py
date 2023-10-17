@@ -1,30 +1,33 @@
 from rest_framework import serializers
 
 from apps.habits.models import Habit
+from apps.habits.validators import RelatedHabitValidator, PleasantHabitValidator, RewardAndRelatedValidator, \
+    FrequencyValidator, EtaValidator
 
 
 class HabitSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the habit model.
 
-    def validate(self, data):
-        if self.instance:
-            if self.instance.related_habit and (data.get('reward') or data.get('related_habit')):
-                raise serializers.ValidationError('You cannot choose a reward and related habit for one habit')
-            elif self.instance.is_pleasant and (data.get('reward') or data.get('related_habit')):
-                raise serializers.ValidationError('A pleasant habit cannot have a reward or an related habit')
-            elif data.get('is_pleasant') and (self.instance.reward or self.instance.related_habit):
-                raise serializers.ValidationError('A pleasant habit cannot have a reward or an related habit')
-            elif data.get('related_habit'):
-                if data.get('related_habit').is_pleasant is False:
-                    raise serializers.ValidationError('A related habit should be pleasant')
-            elif data.get('execution_time'):
-                if data.get('execution_time') > 120:
-                    raise serializers.ValidationError('Execution time of your habit should be no more than 120 seconds')
-            elif data.get('frequency'):
-                if data.get('frequency') > 7:
-                    raise serializers.ValidationError('You cannot perform a habit less than 1 time in 7 days.')
-
-        return data
-
+    Fields:
+    - owner (ForeignKey): The user associated with the habit.
+    - place (CharField): The place where the habit is performed.
+    - time (TimeField): The time when the habit is performed.
+    - action (CharField): The action of the habit.
+    - is_pleasant (BooleanField): Indicates whether the habit is pleasant or not.
+    - related_habit (ForeignKey): A related habit, if any. Can be NULL.
+    - frequency (PositiveIntegerField): The frequency of the habit.
+    - reward (CharField): The reward for completing the habit. Can be NULL.
+    - eta (PositiveIntegerField): The estimated time required to complete the habit.
+    - is_public (BooleanField): Indicates whether the habit is public or not.
+    """
     class Meta:
         model = Habit
         fields = '__all__'
+        validators = [
+            RelatedHabitValidator(field='related_habit'),
+            PleasantHabitValidator(field='is_pleasant'),
+            RewardAndRelatedValidator(),
+            FrequencyValidator(field='frequency'),
+            EtaValidator(field='eta')
+        ]

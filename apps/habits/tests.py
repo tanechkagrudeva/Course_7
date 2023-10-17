@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -6,110 +7,259 @@ from apps.users.models import User
 
 
 class HabitTestCase(APITestCase):
-    """BEFORE TEST CHANGE PERMISSIONS IN apps/habits/views"""
+
+    def create_user(self):
+        self.user = User.objects.create(
+            email="test@gmail.com"
+        )
+        self.user.set_password('123qwe')
+        self.user.save()
 
     def setUp(self) -> None:
-        self.url = '/habits/'
-        self.user = User.objects.create(username='test', password='test', telegram='test')
-        self.data = {
-            'user': self.user,
-            'place': 'test',
-            'time': '2023-08-11 00:00:00',
-            'action': 'test'
-        }
-
-        self.habit = Habit.objects.create(**self.data)
-        self.client.force_authenticate(user=self.user)
-
-    def test_1_create_habit(self):
-        """Habit creation testing """
-        data = {
-            'user': self.user.pk,
-            'place': 'test',
-            'time': '2023-08-11 00:00:00',
-            'action': 'test'
-        }
-        response = self.client.post(f'{self.url}create/', data=data)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        self.assertEqual(Habit.objects.all().count(), 2)
-
-    def test_2_list_habit(self):
-        """Habit list testing """
-        response = self.client.get(f'{self.url}')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.json()['results'],
-            [{'id': self.habit.pk, 'place': 'test', 'time': '2023-08-11T00:00:00+03:00', 'action': 'test',
-              'is_pleasant': False, 'frequency': 1, 'reward': None, 'execution_time': None, 'is_public': False,
-              'user': self.user.pk, 'related_habit': None}]
+        self.create_user()
+        self.habit = Habit.objects.create(
+            owner=self.user,
+            place="здесь",
+            time="10:00:00",
+            action="делать анжуманя",
+            reward="физическое развитие",
+            eta=120,
+            frequency=1
+        )
+        self.pleasant_habit = Habit.objects.create(
+            owner=self.user,
+            place="гроб",
+            time="10:00:00",
+            action="полежать",
+            eta=120,
+            is_pleasant=True,
+            frequency=1
         )
 
-    def test_3_list_habit_public(self):
-        """Habit public list testing """
-        response = self.client.get(f'{self.url}public/')
+    def test_habit_public_list(self):
+        """ Test for getting list of public habit. """
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.json()['results'],
-            []
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(
+            reverse('habit:public_habits_list')
         )
 
-    def test_4_retrieve_habit(self):
-        """Habit retrieve testing """
-
-        response = self.client.get(f'{self.url}{self.habit.pk}/')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
 
         self.assertEqual(
             response.json(),
-            {'id': self.habit.pk, 'place': 'test', 'time': '2023-08-11T00:00:00+03:00', 'action': 'test',
-             'is_pleasant': False, 'frequency': 1, 'reward': None, 'execution_time': None, 'is_public': False,
-             'user': self.user.pk, 'related_habit': None}
+            {
+                "count": 0,
+                "next": None,
+                "previous": None,
+                "results": []
+            }
         )
 
-    def test_5_update_habit(self):
-        """Habit update testing """
-        data = {
-            'user': self.user.pk,
-            'place': 'test1',
-            'time': '2023-08-11 00:00:00',
-            'action': 'test'
-        }
+    def test_habit_ind_list(self):
+        self.client.force_authenticate(self.user)
 
-        response = self.client.put(f'{self.url}update/{self.habit.pk}/', data=data)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.json(),
-            {'id': self.habit.pk, 'place': 'test1', 'time': '2023-08-11T00:00:00+03:00', 'action': 'test',
-             'is_pleasant': False, 'frequency': 1, 'reward': None, 'execution_time': None, 'is_public': False,
-             'user': self.user.pk, 'related_habit': None}
+        response = self.client.get(
+            reverse('habit:ind_habits_list')
         )
 
-    def test_6_update_partial_habit(self):
-        """Habit partial update testing """
-        data = {
-            'place': 'test2'
-        }
-        response = self.client.patch(f'{self.url}update/{self.habit.pk}/', data=data)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(
+            response.json()['results'][0]['is_public']
+        )
 
         self.assertEqual(
-            response.json(),
-            {'id': self.habit.pk, 'place': 'test2', 'time': '2023-08-11T00:00:00+03:00', 'action': 'test',
-             'is_pleasant': False, 'frequency': 1, 'reward': None, 'execution_time': None, 'is_public': False,
-             'user': self.user.pk, 'related_habit': None}
+            Habit.objects.all().count(),
+            2
         )
 
-    def test_7_destroy_lesson(self):
-        """Habit destroying testing """
-        response = self.client.delete(f'{self.url}delete/{self.habit.pk}/')
+    def test_create_habit(self):
+        data = {
+            "place": "на природе",
+            "time": "10:00:00",
+            "action": "пойти к реке",
+            "is_pleasant": True,
+            "frequency": 7,
+            "eta": 120,
+        }
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.client.force_authenticate(self.user)
 
-        self.assertFalse(Habit.objects.all().exists())
+        response = self.client.post(
+            reverse('habit:create_habit'),
+            data
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        self.assertEqual(
+            Habit.objects.all().count(),
+            3
+        )
+
+        self.assertTrue(
+            Habit.objects.get(pk=2).is_pleasant
+        )
+
+    def test_update_habit(self):
+        data = {
+            "reward": "поклониться земле",
+            "frequency": 2,
+            "eta": 100
+        }
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertIsNone(
+            response.json()['related_habit']
+        )
+
+    def test_delete_habit(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.delete(
+            reverse('habit:delete_habit', kwargs={'pk': self.habit.pk}),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT
+        )
+
+    # test validators
+    def test_eta_validator(self):
+        data = {
+            "eta": 200,
+            "frequency": 1
+        }
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['Время выполнения привычки не может превышать 120 секунд или быть меньше 0.']}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+    def test_frequency_validator(self):
+        data = {
+            "eta": 120,
+            "frequency": 8
+        }
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['Нельзя выполнять привычку реже, чем 1 раз в 7 дней.']}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+    def test_related_habit_validator(self):
+        data = {
+            "eta": 120,
+            "frequency": 1,
+            "related_habit": self.habit.pk
+        }
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['Связанные привычки могут быть только приятными.']}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+    def test_pleasant_habit_validator(self):
+
+        data = {
+            "eta": 120,
+            "frequency": 1,
+            "is_pleasant": True,
+            "reward": "солнечный свет"
+        }
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.pleasant_habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['У приятной привычки не может быть вознаграждения или связанной привычки.']}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+    def test_reward_and_relate_validator(self):
+        data = {
+            "eta": 120,
+            "frequency": 1,
+            "is_pleasant": False,
+            "reward": "силушка богатырская",
+            "related_habit": self.pleasant_habit.pk
+        }
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.patch(
+            reverse('habit:update_habit', kwargs={'pk': self.habit.pk}),
+            data
+        )
+
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['Нельзя одновременно выбрать связанную привычку и вознаграждение.']}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )

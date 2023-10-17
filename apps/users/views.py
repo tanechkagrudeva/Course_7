@@ -1,12 +1,20 @@
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.generics import CreateAPIView, ListAPIView
 
+from apps.users.models import User
 from apps.users.serializers import UserSerializer
 
 
-class UserCreateAPIView(generics.CreateAPIView):
-    """View to create a user.
-       To create you need to enter username, password and telegram username.
-       In case of the tests don't forget to change permissions."""
+class UserCreateAPIView(CreateAPIView):
+    """
+    API view for create a user.
+    """
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+
+
+class UserListAPIView(ListAPIView):
+    """
+    API view for display the list of all users.
+    """
+    serializer_class = UserSerializer
+    queryset = User.objects.all()

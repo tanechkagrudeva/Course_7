@@ -1,85 +1,75 @@
-from rest_framework import generics
+from rest_framework.generics import ListAPIView, UpdateAPIView, \
+    DestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.habits.models import Habit
-from apps.habits.pagination import HabitsPagination
-from apps.habits.permissions import IsOwnerPermission
 from apps.habits.serializers import HabitSerializer
+from apps.habits.services import get_schedule
+from apps.users.permissions import IsOwner
+from apps.habits.tasks import send_tg_notification
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
-class HabitCreateAPIView(generics.CreateAPIView):
-    """View to create a habit.
-       To create you need to enter (at least) place, time and action.
-       In case of the tests don't forget to change permissions."""
+# Create your views here.
+class HabitPublicListAPIView(ListAPIView):
+    """
+    API View for display the list of all public habits.
+    """
+    queryset = Habit.objects.all()
     serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated]
-    # In case of test
-    # permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        """ Returns queryset depending on the publicity of the habit."""
+        queryset = Habit.objects.filter(is_public=True)
+        return queryset
+
+
+class HabitIndListAPIView(ListAPIView):
+    """
+    API View for display the list of user`s habits only.
+    """
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        queryset = Habit.objects.filter(owner=self.request.user)
+        return queryset
+
+
+class HabitCreateAPIView(CreateAPIView):
+    """
+    API View for create the habit.
+    """
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         new_habit = serializer.save()
-        new_habit.user = self.request.user
+        new_habit.owner = self.request.user
         new_habit.save()
 
+        get_schedule(action=new_habit.action, frequency=new_habit.frequency)
+        send_tg_notification.delay()
 
-class HabitListAPIView(generics.ListAPIView):
-    """View to get a list of habits (returns only your own habits).
-       Has pagination.
-       In case of the tests don't forget to change permissions."""
+
+class HabitUpdateAPIView(UpdateAPIView):
+    """
+    API View for update the habit.
+    """
+    queryset = Habit.objects.all()
     serializer_class = HabitSerializer
-    pagination_class = HabitsPagination
-    permission_classes = [IsAuthenticated]
-    # In case of test
-    # permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
+    permission_classes = [IsAuthenticated, IsOwner]
 
 
-class HabitPublicListAPIView(generics.ListAPIView):
-    """View to get a list of habits (returns only public habits).
-       Has pagination.
-       In case of the tests don't forget to change permissions."""
+class HabitDestroyAPIView(DestroyAPIView):
+    """
+    API View for delete the habit.
+    """
+    queryset = Habit.objects.all()
     serializer_class = HabitSerializer
-    pagination_class = HabitsPagination
-    permission_classes = [IsAuthenticated]
-    # In case of test
-    # permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Habit.objects.filter(is_public=True)
-
-
-class HabitDetailAPIView(generics.RetrieveAPIView):
-    """View to get a particular habit by its id (returns only your own habits).
-       In case of the tests don't forget to change permissions."""
-    serializer_class = HabitSerializer
-    permission_classes = [IsAuthenticated]
-    # In case of test
-    # permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
-
-
-class HabitUpdateAPIView(generics.UpdateAPIView):
-    """View to update a habit by its id (you can update only your own habits).
-       In case of the tests don't forget to change permissions."""
-    serializer_class = HabitSerializer
-    permission_classes = [IsAuthenticated, IsOwnerPermission]
-    # In case of test
-    # permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
-
-
-class HabitDeleteAPIView(generics.DestroyAPIView):
-    """View to delete a habit by its id (you can delete only your own habit).
-       In case of the tests don't forget to change permissions."""
-    permission_classes = [IsAuthenticated, IsOwnerPermission]
-    # In case of test
-    # permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
+    permission_classes = [IsAuthenticated, IsOwner]

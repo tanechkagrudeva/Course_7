@@ -1,27 +1,37 @@
 from django.db import models
 
-from apps.users.models import User
-
 NULLABLE = {'blank': True, 'null': True}
 
 
 class Habit(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
-    place = models.CharField(max_length=255, verbose_name='Place')
-    time = models.DateTimeField(verbose_name='Time')
-    action = models.CharField(max_length=255, verbose_name='Action')
-    is_pleasant = models.BooleanField(default=False, verbose_name='Is pleasant')
-    related_habit = models.ForeignKey('Habit', on_delete=models.SET_NULL, **NULLABLE, verbose_name='Related habit')
-    # Frequency in days
-    frequency = models.IntegerField(default=1, verbose_name='Frequency')
-    reward = models.CharField(max_length=255, **NULLABLE, verbose_name='Reward')
-    # Execution_time in seconds
-    execution_time = models.IntegerField(**NULLABLE, verbose_name='Execution time')
-    is_public = models.BooleanField(default=False, verbose_name='Is public')
+    """
+    Model representing a habit.
 
-    def __str__(self):
-        return f'I will {self.action} at {self.time} in {self.place}'
+    Fields:
+    - owner (ForeignKey): The user associated with the habit.
+    - place (CharField): The place where the habit is performed.
+    - time (TimeField): The time when the habit is performed.
+    - action (CharField): The action of the habit.
+    - is_pleasant (BooleanField): Indicates whether the habit is pleasant or not.
+    - related_habit (ForeignKey): A related habit, if any. Can be NULL.
+    - frequency (PositiveIntegerField): The frequency of the habit.
+    - reward (CharField): The reward for completing the habit. Can be NULL.
+    - eta (PositiveIntegerField): The estimated time required to complete the habit.
+    - is_public (BooleanField): Indicates whether the habit is public or not.
+    """
+    owner = models.ForeignKey('users.User', on_delete=models.CASCADE, verbose_name='пользователь', **NULLABLE)
+    place = models.CharField(max_length=50, verbose_name='место', help_text='отвечает на вопрос где')
+    time = models.TimeField(verbose_name='время')
+    action = models.CharField(max_length=100, verbose_name='действие')
+    is_pleasant = models.BooleanField(verbose_name='приятность привычки', default=False)
+    related_habit = models.ForeignKey('self', on_delete=models.SET_NULL,
+                                      verbose_name='связанная привычка', **NULLABLE)
+    frequency = models.PositiveIntegerField(default=1, verbose_name='периодичность', help_text="не больше 7")
+    reward = models.CharField(max_length=250, verbose_name='вознаграждение', **NULLABLE)
+    eta = models.PositiveIntegerField(verbose_name='время на выполнение', help_text="не больше 120 секунд")
+    is_public = models.BooleanField(verbose_name='публичность привычки', default=False)
 
     class Meta:
-        verbose_name = 'habit'
-        verbose_name_plural = 'habits'
+        verbose_name = 'привычка'
+        verbose_name_plural = 'привычки'
+        ordering = ('action',)

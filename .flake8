@@ -1,3 +1,11 @@
 [flake8]
-max-line-length = 120
-exclude = .git, .pytest_cache, migrations, .gitignore, *.pot, *.py[co], __pycache__, venv, .env, env
+ignore = E501
+exclude =
+    migrations
+    __pycache__
+    manage.py
+    settings.py
+    env
+    .env
+    config
+    admin.py

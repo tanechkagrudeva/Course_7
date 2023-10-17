@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class HabitsConfig(AppConfig):
+class HabitConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.habits'
+    name = 'habit'

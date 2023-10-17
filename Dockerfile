@@ -1,12 +1,9 @@
-FROM python:3.11-slim
+FROM python:3.10
 
-WORKDIR /docker_code
+WORKDIR /code
 
-COPY pyproject.toml .
+COPY requirements.txt .
 
-RUN pip install --upgrade pip
-RUN pip install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-root
+RUN pip3 install -r requirements.txt
 
 COPY . .
